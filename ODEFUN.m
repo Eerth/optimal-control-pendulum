@@ -30,7 +30,10 @@ theta_dd = M \ ([tau; 0] - C*[qd1; qd2] - G);
 
 Td = par.te \ (par.km*u - tau);
 
-yd = [qd1; qd2; theta_dd; Td];
+% Cost
+Ld = u^2 + 1;
+
+yd = [qd1; qd2; theta_dd; Td; Ld];
 
 end
 

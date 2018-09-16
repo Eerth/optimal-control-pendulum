@@ -15,7 +15,12 @@ function stop = out_fun(X, optimValues, state, hFig, par, data, h_sim_fun)
             T = X(nDisControls + 1);
             intervalTimes = linspace(0, T, nDisStates);
             y_dis = reshape(X(nDisControls+2:end), statesSize);
+            
+            % Multiple shooting trajecotry
             [t, y, u] = h_sim_fun(X);
+            
+            % Single shooting trajectory
+            [t_single, y_single] = ode45(@(t, y) ODEFUN(t, y, u_dis, T, par, data), [0, T], [y_dis(:,1); 0]);
             
             % Controls
             subplot(2,2,1)
@@ -32,17 +37,18 @@ function stop = out_fun(X, optimValues, state, hFig, par, data, h_sim_fun)
             plot(t, y(:,1:2))
             hold on
             plot(intervalTimes', y_dis(1:2,:)','ko','MarkerSize',4);
+            plot(t_single, y_single(:,1:2)','--','MarkerFaceColor','auto');
             hold off
             xlabel('Time [s]')
             ylabel('Angle [rad]')
-            title('Joint angles')
+            title('Angles')
             
             % Angles speed
             subplot(2,2,3)
             plot(t, y(:,3:4))
             xlabel('Time [s]')
             ylabel('Angular velocity [rad/s]')
-            title('Angular velocity')
+            title('Angular velocities')
             
             subplot(2,2,4)
             q = y(end, 1:2);

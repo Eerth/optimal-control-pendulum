@@ -6,12 +6,10 @@ clear
 getParameters;
 
 % Hyper parameters
-nDisControls = 15;
+nDisControls = 10;
 nDisStates = 10;
 statesSize = [5, nDisStates];
-%T = 5; % End time
-%intervalTimes = linspace(0, T, nDisStates);
-data.interpMethod = 'previous'; % linear, spline
+data.interpMethod = 'spline'; % previous, linear, spline
 
 % Save in data
 data.nDisControls = nDisControls;
@@ -46,7 +44,7 @@ Aeq(8, length(X_init)-1) = 1;
 Beq = [pi; 0; 0; 0; 0; 0; 0; 0];
 
 % Bounds
-LB = [-1 * ones(1, nDisControls), 0, -100 * ones(1, 5*nDisStates)];
+LB = [-1 * ones(1, nDisControls), 0.1, -100 * ones(1, 5*nDisStates)];
 UB = [ 1 * ones(1, nDisControls), 5,  100 * ones(1, 5*nDisStates)];
 
 %% Run optimization
@@ -55,7 +53,9 @@ options = optimoptions('fmincon',...
     'OutputFcn',@(x,optimValues,state) out_fun(x,optimValues,state,figure(1),par,data,h_sim_fun),...
     'Display','iter-detailed',...
     'MaxIterations',60,...
-    'Algorithm','sqp');
+    'Algorithm','sqp',...
+    'UseParallel',true,...
+    'ConstraintTolerance',1e-2);
 X = fmincon(@(X) h_obj_fun(X), X_init, [], [], Aeq, Beq, LB, UB, @(X) h_con_fun(X), options);
 
 %% Plot
@@ -70,7 +70,7 @@ u = interp1(linspace(0, T, data.nDisControls), u_dis, t, data.interpMethod);
 
 plot_pendulum(t, y, par)
 
-figure(2)
-plot(t, y(:,1:5), t, u)
-legend('q1','q2','qd1','qd2','tau');
+% figure(2)
+% plot(t, y(:,1:5), t, u)
+% legend('q1','q2','qd1','qd2','tau');
 
