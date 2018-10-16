@@ -57,7 +57,7 @@ function stop = out_fun(X, optimValues, state, hFig, par, data, h_sim_fun)
             x2 = x1(2) - [0, par.l2*sin(q(1) + q(2))];
             y2 = y1(2) + [0, par.l2*cos(q(1) + q(2))];
             plot(x1, y1, x2, y2, 'LineWidth', 2)
-            axis([-0.25,0.25,-0.25,0.25])
+            axis([-0.4,0.4,-0.4,0.4])
             xlabel('x [m]')
             ylabel('y [m]')
             

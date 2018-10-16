@@ -3,20 +3,21 @@ clear
 % y = [theta_1; theta_2; theta_1d; theta_2d; T];
 
 % Load model parameters
-getParameters;
+getFakeParameters;
+
+% Get ODE and Jacobian functions
+[data.h_Fyd, data.h_Fjac] = getOdeFun(par);
 
 % Hyper parameters
 nDisControls = 10;
 nDisStates = 10;
 statesSize = [5, nDisStates];
-data.interpMethod = 'spline'; % previous, linear, spline
+data.interpMethod = 'pchip'; % previous, linear, spline
 
 % Save in data
 data.nDisControls = nDisControls;
 data.nDisStates = nDisStates;
 data.statesSize = statesSize;
-%data.T = T;
-%data.intervalTimes = intervalTimes;
 
 % Initial guess
 u_init = 0.5*ones(nDisControls, 1);
@@ -45,7 +46,7 @@ Beq = [pi; 0; 0; 0; 0; 0; 0; 0];
 
 % Bounds
 LB = [-1 * ones(1, nDisControls), 0.1, -100 * ones(1, 5*nDisStates)];
-UB = [ 1 * ones(1, nDisControls), 5,  100 * ones(1, 5*nDisStates)];
+UB = [ 1 * ones(1, nDisControls),   5,  100 * ones(1, 5*nDisStates)];
 
 %% Run optimization
 [h_obj_fun, h_con_fun, h_sim_fun] = obj_con_fun(data, par);
@@ -55,17 +56,19 @@ options = optimoptions('fmincon',...
     'MaxIterations',60,...
     'Algorithm','sqp',...
     'UseParallel',true,...
-    'ConstraintTolerance',1e-2);
+    'ConstraintTolerance',1e-3,'OptimalityTolerance',1e-1,...
+    'CheckGradients',false,'SpecifyConstraintGradient',false,'SpecifyObjectiveGradient',false);
 X = fmincon(@(X) h_obj_fun(X), X_init, [], [], Aeq, Beq, LB, UB, @(X) h_con_fun(X), options);
 
-%% Plot
+%% Plot final result
 % Get distcrete controls and states
 u_dis = X(1:data.nDisControls);
 T = X(nDisControls+1);
 y_dis = reshape(X(nDisControls+2:end),statesSize);
 
 % Simulate system
-[t, y] = ode45(@(t, y) ODEFUN(t, y, u_dis, T, par, data), [0, T], y_dis(:,1));
+ode_options = odeset('Jacobian', data.h_Fjac);
+[t, y] = ode45(@(t, y) ODEFUN(t, y, u_dis, T, par, data), [0, T], [y_dis(:,1); 0], ode_options);
 u = interp1(linspace(0, T, data.nDisControls), u_dis, t, data.interpMethod);
 
 plot_pendulum(t, y, par)

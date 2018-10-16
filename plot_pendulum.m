@@ -8,7 +8,7 @@ x2 = x1(2) - [0, par.l2*sin(q(n, 1) + q(n, 2))];
 y2 = y1(2) + [0, par.l2*cos(q(n, 1) + q(n, 2))];
 
 plot(x1, y1, x2, y2, 'LineWidth', 2)
-axis([-0.25,0.25,-0.25,0.25])
+axis([-0.4,0.4,-0.4,0.4])
 drawnow
 if n < size(q, 1)
     pause(t(n+1)-t(n))
